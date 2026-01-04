@@ -179,3 +179,146 @@ SELECT
     NTILE(2) OVER(ORDER BY Sales DESC) as Bucket2,
     NTILE(3) OVER(ORDER BY Sales DESC) as Bucket3
 from Sales.Orders;
+
+--NTILE() usecase
+--will do data segmentation as a data analyst
+--equalizing load processing and etl as a data engineer
+
+--DATA SEGMENTATION
+--divides a dataset into distinct subsets based on certain criteria.
+--for ex - like grouping up the customers based on their behaviour
+--(we can segment customer with their sales, employees with their slaries, products by prices and so on)
+
+--segment all orders into 3 categories high, medium and low sales
+SELECT
+    OrderID,
+    ProductID,
+    Sales,
+    CASE Sales_Rank
+    WHEN 1 THEN 'HIGH'
+    WHEN 2 THEN 'MID'
+    WHEN 3 THEN 'LOW'
+    END as Sales_Rank
+FROM(SELECT
+        OrderID,
+        ProductID,
+        Sales,
+        NTILE(3) OVER(ORDER BY Sales DESC) as Sales_Rank
+from Sales.Orders)t
+
+--EQUALIZING LOAD
+--load balancing
+
+/*
+When moving large table from one db to another db
+if we move the full table in one go which is large it may take a long time and we can get errors too
+so we can transfer the table to another db in parts to make sure we dont get errors
+after transfering we can use the union to see the full table
+*/
+
+--in order to export the data devide the orders table into two groups
+SELECT *,
+    NTILE(2) OVER(ORDER BY OrderID ASC) as Table_Group
+from Sales.Orders;
+
+--%AGE BASED RANKING
+--cume_dist(), percent_rank()
+--these functions are amazing in order to do distribution analysis
+
+
+--CUME_DIST()
+--cumulative distribution calculates the distribution of data point within a window
+--CUME_DIST = position number of the value / number of rows
+--tie rule = the position of the last occurence of the same value will be considered as the position number of the value
+--Inclusive (the current row is included)
+--range [0, 1] never 0
+
+SELECT
+    OrderID,
+    ProductID,
+    Sales,
+    CUME_DIST() OVER(ORDER BY Sales DESC)
+FROM Sales.Orders;
+
+--find the product that falls within the highest 40% of prices
+
+SELECT
+    ProductID,
+    Product,
+    Category,
+    Price,
+    Price_Rank,
+    CONCAT(Price_Rank * 100, '%') as Dist_Rank
+FROM(SELECT
+        ProductID,
+        Product,
+        Category,
+        Price,
+        CUME_DIST() OVER(ORDER BY PRICE DESC) as Price_Rank 
+FROM Sales.Products)t
+WHERE Price_Rank<=0.4;
+
+
+--PERCENT_RANK()
+--calculates the relative position of each row within a window
+--PERCENT_RANK = postition number of the value - 1 / number of rows - 1
+--tie rule = the position of the first occurence of the same value will be considered as the position number of the value
+--Exclusive (the current row is exclusive)
+--range [0, 1] can be 0
+
+SELECT
+    OrderID,
+    ProductID,
+    Sales,
+    ROUND(PERCENT_RANK() OVER(ORDER BY Sales DESC), 2)as Rank_Percentage
+FROM Sales.Orders;
+
+--find the product that falls within the highest 40% of prices
+SELECT
+    ProductID,
+    Product,
+    Category,
+    Price,
+    Price_Rank,
+    CONCAT(Price_Rank * 100, '%') as Dist_Rank
+FROM(SELECT
+        ProductID,
+        Product,
+        Category,
+        Price,
+        PERCENT_RANK() OVER(ORDER BY PRICE DESC) as Price_Rank 
+FROM Sales.Products)t
+WHERE Price_Rank<=0.4;
+
+
+--RANK WINDOW FUNCTIONS SUMMARY
+/*
+Assign a rank for each row within a window
+
+Types
+
+INTEGER BASED RANKING
+1. ROW_NUMBER()
+2. RANK()
+3. DENSE_RANK()
+4. NTILE()
+
+PERCENTAGE BASED RANKING
+1. CUME_DIST()
+2. PERCENT_RANK()
+
+RULES
+1. expression should be empty (arguments not allowed)
+2. we must use order by
+3. frame clause is not allowed
+
+USECASES
+1. top n alaysis / bottom n alaysis
+2. Identify and remove duplicates
+3. find data quality issues
+4. generate unique id's (if our table dont have clean primary key) + paginating
+5. data segmentation
+6. data distribution analysis
+7. Equalizing load processing
+
+*/
