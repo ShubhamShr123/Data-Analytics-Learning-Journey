@@ -137,3 +137,45 @@ BOTTOM N ANALYSIS
 ASSIGN UNIQUE IDS for duplicacy check
 QUALITY CHECKS: Identify Duplicates
 */
+
+--NTILE(number_of_buckets)
+--divides the rows into a specified number of approximately equal groups (Buckets)
+--we have to define a numerical value inside the ntile
+--Bucket size = Number of row / Number of buckets
+
+/*
+NTILE(2)
+LIKE WE HAVE A DATA
+SALES | NTILE
+100   | 1
+80    | 1
+80    | 2
+50    | 2
+
+the bucket size is calulcated with the help of total number of rows / number of buckets
+4/2 = 2 (means each bucket will have 2 rows)
+WE CAN SEE THAT THE DATA IS DIVIDED INTO 2 BUCKETS
+where the first 2 rows are in bucket 1 and the next 2 rows are in bucket 2
+
+If there are odd number of rows then the extra row will be added to the earlier buckets
+NTILE(2)
+LIKE WE HAVE A DATA
+SALES | NTILE
+100   | 1
+80    | 1
+80    | 1
+50    | 2
+30    | 2
+
+so above we have 5 rows and 2 buckets
+sql rule = larger groups come first
+*/
+
+--NTILE()
+SELECT
+    OrderID,
+    Sales,
+    NTILE(1) OVER(ORDER BY Sales DESC) as Bucket1,
+    NTILE(2) OVER(ORDER BY Sales DESC) as Bucket2,
+    NTILE(3) OVER(ORDER BY Sales DESC) as Bucket3
+from Sales.Orders;
