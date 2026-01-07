@@ -151,7 +151,7 @@ SELECT
 from Sales.Products
 WHERE Price > (SELECT AVG(Price) FROM Sales.Products);
 
---SUBQUERY LOGICAL OPERATORS
+--subquery logical operators
 
 --subquery in operator
 --used to check whether a value matches any value from a list.
@@ -160,7 +160,6 @@ WHERE Price > (SELECT AVG(Price) FROM Sales.Products);
 SELECT
 *
 FROM Sales.Orders
-WHERE CustomerID in (SELECT CustomerID FROM Sales.Customers WHERE COUNTRY = 'Germany'); 
 
 --subquery any operator
 --checks if a value matches any value within a list.
@@ -170,6 +169,7 @@ WHERE CustomerID in (SELECT CustomerID FROM Sales.Customers WHERE COUNTRY = 'Ger
 SELECT
 *
 FROM Sales.Employees
+WHERE CustomerID in (SELECT CustomerID FROM Sales.Customers WHERE COUNTRY = 'Germany'); 
 WHERE Gender = 'F' and Salary > ANY(SELECT Salary FROM Sales.Employees WHERE Gender = 'M');
 
 --subquery all operator
@@ -180,3 +180,103 @@ SELECT
 *
 FROM Sales.Employees
 WHERE Gender = 'F' and Salary>ALL(SELECT Salary FROM Sales.employees WHERE Gender = 'M');
+
+--SUBQUERY (CO RELATED / NON CO RELATED)
+--before this all the subqueries we learnt were non co related
+
+--NON CO RELATED SUBQUERY - a subquery that can run independently from the main query
+
+--CO RELATED SUBQUERY - a subquery that depends on the main query for its values
+/*
+- Dependency on outer query: The inner query references columns from the outer query, making them “correlated.”
+- Row-by-row execution: Unlike a regular subquery (which runs once independently), a correlated subquery runs repeatedly—once for each row processed by the outer query.
+- Dynamic evaluation: Results change depending on the current row being evaluated in the outer query.
+- Common use cases: Filtering, comparisons, conditional updates, and ranking.
+*/
+
+--show all customer details and find the total orders for each customer
+
+--with corelated subquery
+SELECT
+*,
+(SELECT COUNT(OrderID) from Sales.Orders as o WHERE c.CustomerID = o.CustomerID) TotalOrders
+from Sales.Customers as c;
+
+--with join and subquery (old way)
+SELECT
+c.*,
+o.TotalOrders
+from Sales.Customers as c
+left JOIN 
+    (SELECT
+    CustomerID,
+    COUNT(OrderID) as TotalOrders    
+    from Sales.Orders
+    GROUP BY CustomerID) o
+on c.CustomerID = o.CustomerID;
+
+/*
+CoRelated                    |       NonCoRelated
+---------------------------------------------------------------------------
+subquery is idependent       |subquery is dependent on main query from main query    
+subquery runs once           |   subquery runs multiple times (for each row of main query
+can be exeucted alone        |   cannot be executed alone
+easier to read and understand|harder to read and understand
+executed only once leads to  | executed multiple times leads to poor performance
+better performance 
+static comparisons, filtering|Rows by row comparisons, Dynamic filtering
+with constants
+*/
+
+--subquery EXISTS operator
+--check if a subquery returns any rows
+
+--co related subquery in where clause in where clause exists operator
+/*
+SELECT col1, col2
+from table
+where EXISTS(select 1
+from table2
+where table.id = table2.id)
+
+here we are just checking if the subquery is return atleast 1 row
+no othe
+*/
+
+--show the details of orders made by customers in germany
+SELECT
+*
+FROM Sales.Orders as o
+WHERE EXISTS (SELECT
+*
+FROM Sales.Customers as c
+where Country = 'Germany'
+and o.CustomerID = c.CustomerID);
+--above in the subquery no matter what we are writing in the select list (it is ignored by the EXIST operator)
+--show the details of orders not made by customers in germany
+SELECT
+*
+FROM Sales.Orders as o
+WHERE NOT EXISTS (SELECT
+*
+FROM Sales.Customers as c
+where Country = 'Germany'
+and o.CustomerID = c.CustomerID);
+--above the results are row by row evaluated (means the condition is checked row by row)
+
+
+--SUBQUERY SUMMARY
+/*
+Query inside another QUERY
+breakes a complex query into smaller, manageable pieces
+
+USECASES
+1. Create temp result sets
+2. Prepare data before joining TABLE
+3. Dynamic and complex filtering
+4. Check the existence of rows from another table(EXISTS)
+5. Row by Row comparison - corelated subquery
+*/
+
+
+
