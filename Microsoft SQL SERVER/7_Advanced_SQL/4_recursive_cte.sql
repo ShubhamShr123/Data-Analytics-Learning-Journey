@@ -84,3 +84,18 @@ FROM CTE_EMP_HIERARCHY
     f. (as the sql stops searching for the employees having the ManagerID as (2(kevin), 3(mary)) now the 2rd iteration will end and 3rd iteration will start which will search if there are any employees having the managerid as (4 Michael), (5 Carol))this will continue until there are no more employees left to process (ie no more matches found)
 )
 */
+
+/*
+SUMMARY
+
+CTE is a temprory named result set that can be used multiple times within a QUERY
+ADVANTAGES OF CTE:
+1. Readability - makes complex queries easier to read and understand by breaking them into smaller, manageable parts.
+2. Modularity - allows you to define a CTE once and reference it multiple times within the same query, promoting code reuse.
+3. Reusability - CTEs can be reused within the same query, reducing redundancy and improving maintainability.
+4. Organization - helps organize complex queries by separating different logical parts into distinct sections.
+5. Recursion - supports recursive queries, enabling you to work with hierarchical or self-referential data structures.
+
+1. Result of CTE is like Tables which cant be used from multiple queries outside the main query where it is defined
+2. TIP : Dont create more than 5 cte in a single query as it may impact performance negatively and readability
+*/
