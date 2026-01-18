@@ -7,4 +7,4 @@
 --returning unique list of all the countries
 select 
 DISTINCT country
-from customers
+from Sales.Customers
