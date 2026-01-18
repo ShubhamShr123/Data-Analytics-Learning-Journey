@@ -59,9 +59,28 @@ WITH CTE_EMP_Hierarchy as (
         1 as Level
     from Sales.Employees
     WHERE ManagerID IS NULL
-
-
+    UNION ALL
+    --RECURSIVE QUERY
+    SELECT 
+        e.EmployeeID,
+        e.FirstName,
+        e.ManagerID,
+        Level + 1
+    FROM Sales.Employees as e
+    INNER JOIN CTE_EMP_Hierarchy as ceh
+    on e.ManagerID = ceh.EmployeeID
 )
 SELECT
 *
 FROM CTE_EMP_HIERARCHY
+/*
+1. Anchor query - Ran only once (which will select the top level employee not having any manager)
+2. Recursive query - works by searching if a manager id is equal to which employee id(
+    a. first it will check the 1st row which is frank having no manager id so the recursive query will not find any match and will skip it.
+    b. the it will move to the next row (which is kevin) having Frank as manager id so it will find a match and add kevin to the intermediate results with level 2
+    c. then it will move to the next row (which is mary) having frank as manager id so it will find a match and add mary to the intermediate results with level 2
+    d. now next iteration will be started (as now there are no more employees having the frank as their manager id) so the next level will be 3
+    e. from the next line onwards it will keep searching for employees having either kevin or mary as their manager id and will keep adding them to the intermediate results with level 3
+    f. (as the sql stops searching for the employees having the ManagerID as (2(kevin), 3(mary)) now the 2rd iteration will end and 3rd iteration will start which will search if there are any employees having the managerid as (4 Michael), (5 Carol))this will continue until there are no more employees left to process (ie no more matches found)
+)
+*/
