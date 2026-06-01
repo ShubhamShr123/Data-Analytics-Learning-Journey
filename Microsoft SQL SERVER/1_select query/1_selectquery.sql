@@ -19,7 +19,7 @@ select *
 from customers
 
 select * 
-
+from orders
 --selecting only required columns from the table
 select 
 	country,
