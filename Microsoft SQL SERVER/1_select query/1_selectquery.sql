@@ -38,7 +38,5 @@ from customers
 where score != 0
 --getting the data where country is germany
 select * 
-from customers 
+from customers
 where country='Germany'
-
---order by

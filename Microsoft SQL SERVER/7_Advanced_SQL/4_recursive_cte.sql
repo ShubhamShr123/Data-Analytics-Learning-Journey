@@ -49,6 +49,7 @@ FROM Series
 OPTION (MAXRECURSION 30) --this will make the query not iterate more than 30
 
 --TASK : Show the employee hierarchy by diplaying each employee's level within the organization
+use SalesDB;
 
 WITH CTE_EMP_Hierarchy as (
     --ANCHOR QUERY
@@ -73,7 +74,10 @@ WITH CTE_EMP_Hierarchy as (
 SELECT
 *
 FROM CTE_EMP_HIERARCHY
+
 /*
+EXECUTION ORDER
+
 1. Anchor query - Ran only once (which will select the top level employee not having any manager)
 2. Recursive query - works by searching if a manager id is equal to which employee id(
     a. first it will check the 1st row which is frank having no manager id so the recursive query will not find any match and will skip it.
